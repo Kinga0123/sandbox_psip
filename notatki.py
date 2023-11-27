@@ -1,16 +1,25 @@
-from dane import users_list
+### BEAUTIFULSOUP4
 
-def update_user(users_list: list[dict,dict]) -> None:
-    nick_of_user = input('podaj nick uzytkownika do modyfikacji')
-    print(nick_of_user)
-    for user in users_list:
-        if user['nick'] == nick_of_user:
-            print('Znaleziono!!')
-            user['name'] = input('podaj nowe imie')
-            user['nick'] = input('podaj nowa ksywke')
-            user['posts'] = int(input('podaj liczbe postow: '))
+from bs4 import BeautifulSoup
+import requests
+import re
 
-update_user(users_list)
-for user in users_list:
-    print(user)
 
+nazwy_miejscowosci = ['Opoczno', 'Lublin', 'Gdańsk']
+def get_coordinates_of(city:str)->list[float,float]:
+
+    # pobranie strony internetowej
+    adres_URL = f'https://pl.wikipedia.org/wiki/{city}'
+    response = requests.get(url=adres_URL)
+    response_html = BeautifulSoup(response.text, 'html.parser')
+
+    # pobranie współrzędnych z treści strony internetowej
+    response_html_latitude = response_html.select('.latitude')[1].text  # . ponieważ class
+    response_html_latitude = float(response_html_latitude.replace(',','.'))
+    response_html_longitude = response_html.select('.longitude')[1].text  # . ponieważ class
+    response_html_longitude = float(response_html_longitude.replace(',','.'))
+
+    return [response_html_latitude, response_html_longitude]
+
+for item in nazwy_miejscowosci:
+    print(get_coordinates_of(item))
