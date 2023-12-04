@@ -14,4 +14,3 @@ print(npc_2.miasto)
 
 print(npc_1.pogoda_z(npc_1.miasto))
 print(npc_2.pogoda_z(npc_2.miasto))
-#########
