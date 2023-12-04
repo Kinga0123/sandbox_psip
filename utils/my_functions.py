@@ -1,3 +1,4 @@
+
 from bs4 import BeautifulSoup
 import requests
 import folium
@@ -106,6 +107,50 @@ def update_user(users_list: list[dict,dict]) -> None:
             user['posts'] = int(input('podaj liczbe postow: '))
             user['city'] = input('podaj miasto')
 
+# ==================================== MAPA
+import requests
+from bs4 import BeautifulSoup
+import folium
+from dane import users_list
+def get_coordinates(city:str)->list[float,float]:
+    # pobieranie strony internetowej
+    adres_url=f'https://pl.wikipedia.org/wiki/{city}'
+
+    response=requests.get(url=adres_url) #zwraca obiekt, wywołany jest status
+    response_html=BeautifulSoup(response.text, 'html.parser') #zwraca tekst kodu strony internetowej, zapisany w html
+
+    #pobieranie współrzędnych
+    response_html_lat=response_html.select('.latitude')[1].text #kropka oznacza klasę, do ID odwołujemy sie przez #
+    response_html_lat=float(response_html_lat.replace(',','.'))
+
+    response_html_long=response_html.select('.longitude')[1].text #kropka oznacza klasę, do ID odwołujemy sie przez #
+    response_html_long=float(response_html_long.replace(',','.'))
+
+    return [response_html_lat,response_html_long]
+def get_map_one_user(user:str)->None:
+    city=get_coordinates(user['city'])
+    map = folium.Map(location=city,
+                     tiles='OpenStreetMap',
+                     zoom_start=14
+                     )  # location to miejsce wycentrowania mapy
+    folium.Marker(location=city,
+                  popup=f'Użytkownik: {user["name"]}\n'
+                  f'Liczba postow: {user['posts']}'
+                  ).add_to(map)
+    map.save(f'mapka_{user['name']}.html')
+def get_map_of(users:list[dict,dict])->None:
+    map = folium.Map(location=[52.3,21.0],
+                     tiles='OpenStreetMap',
+                     zoom_start=7
+                     )  # location to miejsce wycentrowania mapy
+    for user in users_list:
+        folium.Marker(location=get_coordinates(city=user['city']),
+                      popup=f'Użytkownik: {user["name"]}\n'
+                      f'Liczba postow: {user['posts']}'
+                      ).add_to(map)
+        map.save('mapka.html')
+#========================END OF MAP
+
 def gui(users_list:list) -> None:
     while True:
         print(f'MENU: \n'
@@ -114,9 +159,9 @@ def gui(users_list:list) -> None:
               f'2: Dodaj użytkownika \n'
               f'3: Usuń użytkownika \n'
               f'4: Modyfikuj użytkownika \n'
-              f'5: Wygeneruj mapę z użytkownkiem \n'
-              f'6: Wygenereuj mapę z wszystkimi użytkownikami \n'
-              )
+              f'5: Wygeneruj mapę z użytkownikiem \n'
+              f'6: Wygeneruj mapę z wszystkimi użytkownikami')
+
         menu_option = input('Podaj funkcję do wywołania')
         print(f'Wybrano funkcję {menu_option}')
 
@@ -138,10 +183,14 @@ def gui(users_list:list) -> None:
                 update_user(users_list)
             case '5':
                 print('Rysuję mapę z użytkownikiem')
-                user = input('podaje nazwę użytkownika do modyfikacji')
+                user = input("Podaj nazwę użytkownika do modyfikacji")
                 for item in users_list:
-                    if item['nick'] == user:
+                    if item['name'] == user:
                         get_map_one_user(item)
             case '6':
-                print('Rysuję mapę z użytkownikami')
+                print('Rysuję mapę z wszystkimi użytkownikami')
                 get_map_of(users_list)
+
+def pogoda_z(miasto: str):
+    url = f"https://danepubliczne.imgw.pl/api/data/synop/station/{miasto}"
+    return requests.get(url).json()
