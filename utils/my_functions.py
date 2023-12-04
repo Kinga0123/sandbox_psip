@@ -1,6 +1,62 @@
+
+from bs4 import BeautifulSoup
 import requests
+import folium
+nazwy_miejscowosci = ['Opoczno', 'Lublin', 'Gdańsk']
+
+from dane import users_list
+
+def get_coordinates_of(city:str)->list[float,float]:
+    # pobranie strony internetowej
+    adres_URL = f'https://pl.wikipedia.org/wiki/{city}'
+    response = requests.get(url=adres_URL)
+    response_html = BeautifulSoup(response.text, 'html.parser')
+
+    # pobranie współrzędnych z treści strony internetowej
+    response_html_latitude = response_html.select('.latitude')[1].text  # . ponieważ class
+    response_html_latitude = float(response_html_latitude.replace(',','.'))
+    response_html_longitude = response_html.select('.longitude')[1].text  # . ponieważ class
+    response_html_longitude = float(response_html_longitude.replace(',','.'))
+
+    return [response_html_latitude, response_html_longitude]
 
 
+# for item in nazwy_miejscowosci:
+#     print(get_coordinates_of(item))
+
+
+# zwrócić mapę z pinezką odnoszącą się do użytkownika podanego z klawiatury
+def get_map_one_user(user:str)->None:
+    city = get_coordinates_of(user['city'])
+    map = folium.Map(
+        location=city,    # gdzie mapa ma byc wycentrowana
+        tiles="OpenStreetMap",
+        zoom_start=15,
+    )
+    folium.Marker(
+        location=city,
+        popup=f'Tu rządzi: {user["name"]},'
+              f'postów: {user["posts"]}'
+    ).add_to(map)
+    map.save(f'mapka_{user["name"]}.html')
+
+
+### RYSOWANIE MAPY
+def get_map_of(users: list[dict,dict])->None:
+    map = folium.Map(
+        location=[52.3, 21.0],    # gdzie mapa ma byc wycentrowana
+        tiles="OpenStreetMap",
+        zoom_start=7,
+    )
+    for user in users:
+        folium.Marker(
+            location=get_coordinates_of(city=user['city']),
+            popup=f'Użytkownik: {user["name"]} \n'
+                  f'Liczba postów: {user["posts"]}'
+        ).add_to(map)
+    map.save('mapka.html')
+get_map_of(users_list)
+# =========================================== END OF MAP ELEMENT ==============================================
 def add_user_to(users_list:list) -> None:
     """
     add object to list
@@ -9,7 +65,8 @@ def add_user_to(users_list:list) -> None:
     """
     name = input('podaj imie ?')
     posts = input('podaj liczbe postow ?')
-    users_list.append({"name": name, "posts": posts})
+    city = input('podaj miasto ?')
+    users_list.append({"name": name, "posts": posts, "city": city})
 
 
 def remove_user_from(users_list: list) -> None:
@@ -48,6 +105,7 @@ def update_user(users_list: list[dict,dict]) -> None:
             user['name'] = input('podaj nowe imie')
             user['nick'] = input('podaj nowa ksywke')
             user['posts'] = int(input('podaj liczbe postow: '))
+            user['city'] = input('podaj miasto')
 
 # ==================================== MAPA
 import requests
@@ -103,6 +161,7 @@ def gui(users_list:list) -> None:
               f'4: Modyfikuj użytkownika \n'
               f'5: Wygeneruj mapę z użytkownikiem \n'
               f'6: Wygeneruj mapę z wszystkimi użytkownikami')
+
         menu_option = input('Podaj funkcję do wywołania')
         print(f'Wybrano funkcję {menu_option}')
 
