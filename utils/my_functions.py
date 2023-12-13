@@ -119,7 +119,7 @@ def get_map_of()->None:
         map.save('mapkaaaaaaaaaa.html')
 #========================END OF MAP
 
-def gui() -> None:
+def gui(users_list:list) -> None:
     while True:
         print(f'MENU: \n'
               f'0: Zakończ program \n'
@@ -176,4 +176,3 @@ print(npc_2.city)
 
 print(npc_1.pogoda_z(npc_1.city))
 print(npc_2.pogoda_z(npc_2.city))
-

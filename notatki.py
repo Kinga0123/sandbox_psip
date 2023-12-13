@@ -27,7 +27,7 @@ def dodaj_uzytkownika(user:str):
         if user == nick['nick']:
             sql_query_1 = f"INSERT INTO public.psip_zadanie(city, name, nick, posts) VALUES ('{nick['city']}', '{nick['name']}', '{nick['nick']}', '{nick['posts']}');"
             cursor.execute(sql_query_1)
-            db_params.commit()
+            cursor.commit()
 
 dodaj_uzytkownika(input('dodaj noooo '))
 
