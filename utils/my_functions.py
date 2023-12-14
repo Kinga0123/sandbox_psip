@@ -119,7 +119,7 @@ def get_map_of()->None:
         map.save('mapkaaaaaaaaaa.html')
 #========================END OF MAP
 
-def gui(users_list:list) -> None:
+def gui() -> None:
     while True:
         print(f'MENU: \n'
               f'0: Zakończ program \n'
